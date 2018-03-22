@@ -75,7 +75,7 @@ favicon: /favicon.png
 
 #你的头像url
 avatar:
-    http://img4.imgtn.bdimg.com/it/u=1373411777,3992091759&fm=27&gp=0.jpg
+    https://raw.githubusercontent.com/zxl890207/Blog/master/WebPages/source/head.png
 #是否开启分享
 share_jia: true
 
