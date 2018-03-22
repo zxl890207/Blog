@@ -3,15 +3,21 @@
 menu:
   主页: /
   随笔: /tags/随笔/
+  tcp/ip: /tags/tcp/
+  c/c++: /tags/c++/
+  go: /tags/go/
+  sql: /tags/sql/
+  linux: /tags/linux/
+  docker: /tags/docker/
 
 # SubNav
 subnav:
   github: "#"
   weibo: "#"
-  rss: "#"
+  weixin: "#"
   zhihu: "#"
+  #rss: "#"
   #qq: "#"
-  #weixin: "#"
   #jianshu: "#"
   #douban: "#"
   #segmentfault: "#"
@@ -69,7 +75,7 @@ favicon: /favicon.png
 
 #你的头像url
 avatar:
-
+    http://img4.imgtn.bdimg.com/it/u=1373411777,3992091759&fm=27&gp=0.jpg
 #是否开启分享
 share_jia: true
 

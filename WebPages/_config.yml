@@ -4,10 +4,10 @@
 
 # Site
 title: 云天飞镜的博客
-subtitle: 云天飞镜的博客
-description: 云天飞镜的博客
+subtitle: 记录一些学习工作遇到的问题
+description: 个人博客
 author: 云天飞镜
-language:
+language: China
 timezone: Asia/Shanghai
 
 # URL
@@ -81,22 +81,23 @@ deploy:
   repository: git@github.com:zxl890207/zxl890207.github.io.git
   branch: master
   message:
-  
-jsonContent: 
-  meta: false 
-  pages: false 
-  posts: 
-    title: true 
-    date: true 
-    path: true 
-    text: false 
-    raw: false 
-    content: false 
-    slug: false 
-    updated: false 
-    comments: false 
-    link: false 
-    permalink: false 
-    excerpt: false 
-    categories: false 
+
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: false
     tags: true
+
