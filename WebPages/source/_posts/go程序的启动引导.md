@@ -105,7 +105,7 @@ func args(c int32, v **byte) {
   }
 ```
 
-断点`runtime.schedinit(SB)`,在`/usr/local/go/src/runtime/proc.go, line 472`，调度器初始化
+断点`runtime.schedinit`,在`/usr/local/go/src/runtime/proc.go, line 472`，调度器初始化
 ```
 // The bootstrap sequence is:
 //	call osinit
@@ -116,66 +116,61 @@ func args(c int32, v **byte) {
 func schedinit() {
   // raceinit must be the first call to race detector.
   // In particular, it must be done before mallocinit below calls racemapshadow.
-	_g_ := getg()
-	if raceenabled {
-		_g_.racectx, raceprocctx0 = raceinit()
-	}
-	sched.maxmcount = 10000 //最大系统线程数限制　　runtime/debug.SetMaxThreads
-
-  // 初始化栈、内存分配器，调度器相关
+  _g_ := getg()
+    if raceenabled {
+    _g_.racectx, raceprocctx0 = raceinit()
+  }
+  sched.maxmcount = 10000 //最大系统线程数限制　　runtime/debug.SetMaxThreads
+  //初始化栈、内存分配器，调度器相关
   tracebackinit()
-	moduledataverify()
-	stackinit()
-	mallocinit()
-	mcommoninit(_g_.m)
-	alginit()       // maps must not be used before this call
-	modulesinit()   // provides activeModules
-	typelinksinit() // uses maps, activeModules
-	itabsinit()     // uses activeModules
-
-	msigsave(_g_.m)
-	initSigmask = _g_.m.sigmask
-
-  // 命令行参数与环境变量初始化
-	goargs()
-	goenvs()
-  // 处理GODEBUG,GOTRACEBACK调试相关的环境变量
-	parsedebugvars()
-  // 垃圾回收器的初始化
-	gcinit()
-  // 通过CPU Core和GOMAXPROCS环境变量确定P的数量
-	sched.lastpoll = uint64(nanotime())
-	procs := ncpu
-	if n, ok := atoi32(gogetenv("GOMAXPROCS")); ok && n > 0 {
-		procs = n
-	}
+  moduledataverify()
+  stackinit()
+  mallocinit()
+  mcommoninit(_g_.m)
+  alginit()       // maps must not be used before this call
+  modulesinit()   // provides activeModules
+  typelinksinit() // uses maps, activeModules
+  itabsinit()     // uses activeModules
+  msigsave(_g_.m)
+  initSigmask = _g_.m.sigmask
+  //命令行参数与环境变量初始化
+  goargs()
+  goenvs()
+  //处理GODEBUG,GOTRACEBACK调试相关的环境变量
+  parsedebugvars()
+  //垃圾回收器的初始化
+  gcinit()
+  //通过CPU Core和GOMAXPROCS环境变量确定P的数量
+  sched.lastpoll = uint64(nanotime())
+  procs := ncpu
+  if n, ok := atoi32(gogetenv("GOMAXPROCS")); ok && n > 0 {
+    procs = n
+  }
   // 调整P的数量
-	if procresize(procs) != nil {
-		throw("unknown runnable goroutine during bootstrap")
-	}
-
-	// For cgocheck > 1, we turn on the write barrier at all times
-	// and check all pointer writes. We can't do this until after
-	// procresize because the write barrier needs a P.
-	if debug.cgocheck > 1 {
-		writeBarrier.cgo = true
-		writeBarrier.enabled = true
-		for _, p := range allp {
-			p.wbBuf.reset()
-		}
-	}
-
-	if buildVersion == "" {
-		// Condition should never trigger. This code just serves
-		// to ensure runtime·buildVersion is kept in the resulting binary.
-		buildVersion = "unknown"
-	}
+  if procresize(procs) != nil {
+    throw("unknown runnable goroutine during bootstrap")
+  }
+  // For cgocheck > 1, we turn on the write barrier at all times
+  // and check all pointer writes. We can't do this until after
+  // procresize because the write barrier needs a P.
+  if debug.cgocheck > 1 {
+    writeBarrier.cgo = true
+    writeBarrier.enabled = true
+    for _, p := range allp {
+      p.wbBuf.reset()
+    }
+  }
+  if buildVersion == "" {
+    // Condition should never trigger. This code just serves
+    // to ensure runtime·buildVersion is kept in the resulting binary.
+    buildVersion = "unknown"
+  }
 }
 ```
 创建一个goroutine(G)，断点`runtime.newproc`,在`/usr/local/go/src/runtime/proc.go, line 3235`//G就是goroutine实现的核心结构了，G维护了goroutine需要的栈、程序计数器以及它所在的M等信息。
 启动一个内核级线程(M),一个开始执行程序，断点`runtime.mstart`,在`/usr/local/go/src/runtime/proc.go, line 1170` //M代表内核级线程，一个M就是一个线程，goroutine就是跑在M之上的；M是一个很大的结构，里面维护小对象内存cache（mcache）、当前执行的goroutine、随机数发生器等等非常多的信息。
 
-关于调度器是如何调度的,请查看[goroutine与调度器](https://studygolang.com/articles/1855)
+关于调度器是如何调度的,请查看[goroutine与调度器](https://studygolang.com/articles/1855)其形象的描述了go调度器的工作方式
 
 而`runtime.main` 即　`/usr/local/go/src/runtime/proc.go`中的`mian`
 ```
@@ -188,46 +183,46 @@ Breakpoint 8, runtime.main () at /usr/local/go/src/runtime/proc.go:109
 (gdb)
 ```
 ```
-  func main() {
-    ...
-  	// Max stack size is 1 GB on 64-bit, 250 MB on 32-bit.Using decimal instead of binary GB and MB because they look nicer in the stack overflow failure message.
-  	if sys.PtrSize == 8 {
-  		maxstacksize = 1000000000
-  	} else {
-  		maxstacksize = 250000000
-  	}
-  	// Allow newproc to start new Ms.
-  	mainStarted = true
-    //启动系统后台监控（定期垃圾回收，并发调度）
-  	systemstack(func() {
-  		newm(sysmon, nil)
-  	})
-
-    //在初始化过程中,上主线程锁,大多数程序并不关心，但少数确实需要由主线程发出的某些调用，可以在初始化过程中的main_main调用runtime.lockosthread来保存锁。
-  	lockOSThread()
-    ...
-    //执行runtime包里的所有init函数　must be before defer
-  	runtime_init()
-    ...
-  	// Defer unlock so that runtime.Goexit during init does the unlock too.
-  	needUnlock := true
-  	defer func() {
-  		if needUnlock {
-  			unlockOSThread()
-  		}
-  	}()
-    //启动垃圾回收器后台操作
-  	gcenable()
-    ...
-    //
-  	fn := main_init //调用所有用户程序涉及包的init函数
-  	fn()
-    //解锁
-  	needUnlock = false
-  	unlockOSThread()
-    ...
-  	fn = main_main // 执行用户逻辑入口
-  	fn()
+func main() {
+  ...
+  // Max stack size is 1 GB on 64-bit, 250 MB on 32-bit.Using decimal instead of binary GB and MB because they look nicer in the stack overflow failure message.
+  if sys.PtrSize == 8 {
+    maxstacksize = 1000000000
+  } else {
+    maxstacksize = 250000000
   }
+  // Allow newproc to start new Ms.
+  mainStarted = true
+  //启动系统后台监控（定期垃圾回收，并发调度）
+  systemstack(func() {
+    newm(sysmon, nil)
+  })
+
+  //在初始化过程中,上主线程锁,大多数程序并不关心，但少数确实需要由主线程发出的某些调用，可以在初始化过程中的main_main调用runtime.lockosthread来保存锁。
+  lockOSThread()
+  ...
+  //执行runtime包里的所有init函数　must be before defer
+  runtime_init()
+  ...
+  // Defer unlock so that runtime.Goexit during init does the unlock too.
+  needUnlock := true
+  defer func() {
+    if needUnlock {
+      unlockOSThread()
+    }
+  }()
+  //启动垃圾回收器后台操作
+  gcenable()
+  ...
+  //
+  fn := main_init //调用所有用户程序涉及包的init函数
+  fn()
+  //解锁
+  needUnlock = false
+  unlockOSThread()
+  ...
+  fn = main_main // 执行用户逻辑入口
+  fn()
+}
 ```
 至此，一个go程序的启动逻辑完成
