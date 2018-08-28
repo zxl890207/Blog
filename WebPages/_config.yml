@@ -79,7 +79,7 @@ theme: yilia
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repository: git@github.com:zxl890207/zxl890207.github.io.git
+  repo: https://github.com/zxl890207/zxl890207.github.io.git
   branch: master
   message:
 
